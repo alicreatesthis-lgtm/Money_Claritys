@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Clarity — Financial Dashboard & Cash Flow Tracker</title>
+    <meta name="description" content="Manage your cash flow, accounts, transactions, and budgets with persistent relational database storage and bank-grade security.">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- Chart.js for smooth financial visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <img src="/images/logo.png" alt="Money Clarity Logo" class="brand-logo-img">
+                <div class="brand-text">
+                    <h1>Money Clarity</h1>
+                    <span class="brand-badge">SQLITE WAL DB</span>
+                </div>
+            </div>
+
+            <ul class="nav-links">
+                <li class="nav-item active" data-view="overview">
+                    <a href="#overview"><span class="nav-icon">📊</span> Overview</a>
+                </li>
+                <li class="nav-item" data-view="accounts">
+                    <a href="#accounts"><span class="nav-icon">🏦</span> Accounts</a>
+                </li>
+                <li class="nav-item" data-view="transactions">
+                    <a href="#transactions"><span class="nav-icon">💳</span> Transactions</a>
+                </li>
+                <li class="nav-item" data-view="budgets">
+                    <a href="#budgets"><span class="nav-icon">🎯</span> Budgets</a>
+                </li>
+                <li class="nav-item" data-view="goals">
+                    <a href="#goals"><span class="nav-icon">🏆</span> Savings Goals</a>
+                </li>
+                <li class="nav-item" data-view="analytics">
+                    <a href="#analytics"><span class="nav-icon">📈</span> Analytics</a>
+                </li>
+                <li class="nav-item" data-view="settings">
+                    <a href="#settings"><span class="nav-icon">⚙️</span> Settings & Security</a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-snippet">
+                    <div class="avatar-circle" id="sidebar-avatar">A</div>
+                    <div class="user-info">
+                        <div class="user-name" id="sidebar-username">Alex Morgan</div>
+                        <div class="user-email" id="sidebar-useremail">alex@claritycash.io</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="main-wrapper">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="page-title">
+                    <h2 id="current-view-title">Financial Overview</h2>
+                </div>
+
+                <div class="header-actions">
+                    <div class="db-pill">
+                        <span class="pulse-dot"></span>
+                        <span>Persistent DB Active</span>
+                    </div>
+
+                    <button class="btn btn-primary btn-sm" id="btn-quick-tx" onclick="openTransactionModal()">
+                        <span>+ Add Transaction</span>
+                    </button>
+
+                    <button class="btn btn-secondary btn-sm" id="btn-logout" onclick="handleLogout()">
+                        <span>Log Out</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dynamic Views Container -->
+            <main class="content-area">
+                
+                <!-- ================= 1. OVERVIEW VIEW ================= -->
+                <section id="view-overview" class="view-section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-title">Total Net Worth</span>
+                                <div class="stat-icon-wrap" style="background:rgba(16,185,129,0.15); color:var(--accent-emerald);">💰</div>
+                            </div>
+                            <div class="stat-value" id="stat-net-worth">$0.00</div>
+                            <div class="stat-trend trend-up">
+                                <span>Assets minus Liabilities</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-title">Monthly Income</span>
+                                <div class="stat-icon-wrap" style="background:rgba(59,130,246,0.15); color:var(--accent-blue);">📥</div>
+                            </div>
+                            <div class="stat-value" id="stat-income">$0.00</div>
+                            <div class="stat-trend trend-up" id="stat-income-sub">Current calendar month</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-title">Monthly Expenses</span>
+                                <div class="stat-icon-wrap" style="background:rgba(244,63,94,0.15); color:var(--accent-rose);">📤</div>
+                            </div>
+                            <div class="stat-value" id="stat-expense">$0.00</div>
+                            <div class="stat-trend trend-down" id="stat-expense-sub">Current calendar month</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-title">Savings Rate</span>
+                                <div class="stat-icon-wrap" style="background:rgba(139,92,246,0.15); color:var(--accent-purple);">⚡</div>
+                            </div>
+                            <div class="stat-value" id="stat-savings-rate">0%</div>
+                            <div class="stat-trend trend-neutral">Target: > 20%</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="dashboard-grid">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h3>6-Month Cash Flow Trend</h3>
+                                <span class="badge-pill">Income vs Expense</span>
+                            </div>
+                            <div style="height: 280px; position: relative;">
+                                <canvas id="chart-cashflow"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h3>Monthly Category Spend</h3>
+                                <span class="badge-pill" id="overview-month-pill">This Month</span>
+                            </div>
+                            <div style="height: 280px; position: relative;">
+                                <canvas id="chart-category-donut"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions & Savings Goals Row -->
+                    <div class="dashboard-grid">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h3>Recent Transactions</h3>
+                                <a href="#transactions" class="btn btn-secondary btn-sm" onclick="switchView('transactions')">View All</a>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Payee</th>
+                                            <th>Category</th>
+                                            <th>Account</th>
+                                            <th style="text-align:right;">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="overview-recent-tx-body">
+                                        <!-- Populated via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h3>Savings Goals</h3>
+                                <button class="btn btn-primary btn-sm" onclick="openGoalModal()">+ New Goal</button>
+                            </div>
+                            <div id="overview-goals-list" style="display:flex; flex-direction:column; gap:14px;">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 2. ACCOUNTS VIEW ================= -->
+                <section id="view-accounts" class="view-section">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <div>
+                            <h3 style="font-size:1.4rem; font-weight:700;">Financial Accounts</h3>
+                            <p style="color:var(--text-secondary); font-size:0.88rem;">Connected checking, savings, credit cards, and investments</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openAccountModal()">+ Add New Account</button>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-title">Total Liquid Assets</div>
+                            <div class="stat-value" id="acc-total-assets" style="color:var(--accent-emerald);">$0.00</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Checking, Savings, Cash</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Total Liabilities</div>
+                            <div class="stat-value" id="acc-total-liabilities" style="color:var(--accent-rose);">$0.00</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Credit Cards & Loans</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Total Net Worth</div>
+                            <div class="stat-value" id="acc-net-worth" style="color:#FFF;">$0.00</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Persistent Balance Sync</div>
+                        </div>
+                    </div>
+
+                    <div class="accounts-grid" id="accounts-grid-container">
+                        <!-- Populated via JS -->
+                    </div>
+                </section>
+
+                <!-- ================= 3. TRANSACTIONS VIEW ================= -->
+                <section id="view-transactions" class="view-section">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <div>
+                            <h3 style="font-size:1.4rem; font-weight:700;">Transaction History</h3>
+                            <p style="color:var(--text-secondary); font-size:0.88rem;">Full search, categorization, and account balance reconciliation</p>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <a href="/api/transactions/export/csv" id="btn-export-csv" class="btn btn-secondary">📥 Export CSV</a>
+                            <button class="btn btn-primary" onclick="openTransactionModal()">+ Record Transaction</button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Bar -->
+                    <div class="filter-bar">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="tx-search-input" placeholder="Search payee, notes, or category...">
+                        </div>
+                        <select id="tx-filter-account" class="form-select">
+                            <option value="">All Accounts</option>
+                        </select>
+                        <select id="tx-filter-type" class="form-select">
+                            <option value="">All Types</option>
+                            <option value="expense">Expenses Only</option>
+                            <option value="income">Income Only</option>
+                            <option value="transfer">Transfers</option>
+                        </select>
+                        <select id="tx-filter-category" class="form-select">
+                            <option value="">All Categories</option>
+                            <option value="Food & Dining">Food & Dining</option>
+                            <option value="Housing & Rent">Housing & Rent</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Utilities & Bills">Utilities & Bills</option>
+                            <option value="Salary & Wages">Salary & Wages</option>
+                            <option value="Freelance & Side Income">Freelance & Side</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Shopping & Goods">Shopping & Goods</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Investments">Investments</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" onclick="resetTxFilters()">Reset</button>
+                    </div>
+
+                    <!-- Transactions Table -->
+                    <div class="panel-card">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Payee / Description</th>
+                                        <th>Category</th>
+                                        <th>Account</th>
+                                        <th>Type</th>
+                                        <th style="text-align:right;">Amount</th>
+                                        <th style="text-align:center;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactions-table-body">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 4. BUDGETS VIEW ================= -->
+                <section id="view-budgets" class="view-section">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <div>
+                            <h3 style="font-size:1.4rem; font-weight:700;">Monthly Budgets</h3>
+                            <p style="color:var(--text-secondary); font-size:0.88rem;">Track category spending limits against real-time database transactions</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openBudgetModal()">+ Create Category Budget</button>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-title">Total Monthly Budget</div>
+                            <div class="stat-value" id="budget-total-limit">$0.00</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Current Month Spent</div>
+                            <div class="stat-value" id="budget-total-spent" style="color:var(--accent-rose);">$0.00</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Remaining Allowance</div>
+                            <div class="stat-value" id="budget-total-remaining" style="color:var(--accent-emerald);">$0.00</div>
+                        </div>
+                    </div>
+
+                    <div class="budget-list" id="budget-cards-container">
+                        <!-- Populated via JS -->
+                    </div>
+                </section>
+
+                <!-- ================= 5. SAVINGS GOALS VIEW ================= -->
+                <section id="view-goals" class="view-section">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <div>
+                            <h3 style="font-size:1.4rem; font-weight:700;">Savings Goals & Targets</h3>
+                            <p style="color:var(--text-secondary); font-size:0.88rem;">Plan for emergency funds, investments, and milestone purchases</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openGoalModal()">+ Create Savings Goal</button>
+                    </div>
+
+                    <div class="goals-grid" id="goals-grid-container">
+                        <!-- Populated via JS -->
+                    </div>
+                </section>
+
+                <!-- ================= 6. ANALYTICS VIEW ================= -->
+                <section id="view-analytics" class="view-section">
+                    <div style="margin-bottom:20px;">
+                        <h3 style="font-size:1.4rem; font-weight:700;">Financial Analytics & Trends</h3>
+                        <p style="color:var(--text-secondary); font-size:0.88rem;">Deep insights into your cash flow health and category distribution</p>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h3>Historical Income vs Expense</h3>
+                            </div>
+                            <div style="height: 320px;">
+                                <canvas id="chart-analytics-bar"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h3>Spending by Category</h3>
+                            </div>
+                            <div style="height: 320px;">
+                                <canvas id="chart-analytics-pie"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= 7. SETTINGS & SECURITY VIEW ================= -->
+                <section id="view-settings" class="view-section">
+                    <div style="margin-bottom:20px;">
+                        <h3 style="font-size:1.4rem; font-weight:700;">Settings & Security Center</h3>
+                        <p style="color:var(--text-secondary); font-size:0.88rem;">Manage your user profile, currency preferences, and password security</p>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <!-- Profile Settings -->
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h3>User Profile</h3>
+                            </div>
+                            <form id="form-profile" style="display:flex; flex-direction:column; gap:16px;">
+                                <div class="form-group">
+                                    <label>Account Email</label>
+                                    <input type="text" id="settings-email" class="form-input" disabled style="opacity:0.65;">
+                                </div>
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" id="settings-fullname" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Base Currency</label>
+                                    <select id="settings-currency" class="form-select">
+                                        <option value="USD">USD ($)</option>
+                                        <option value="EUR">EUR (€)</option>
+                                        <option value="GBP">GBP (£)</option>
+                                        <option value="CAD">CAD (C$)</option>
+                                        <option value="AUD">AUD (A$)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="align-self:flex-start;">Save Profile</button>
+                            </form>
+                        </div>
+
+                        <!-- Change Password -->
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h3>Security & Passwords</h3>
+                            </div>
+                            <form id="form-password" style="display:flex; flex-direction:column; gap:16px;">
+                                <div class="form-group">
+                                    <label>Current Password</label>
+                                    <input type="password" id="settings-curr-pass" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>New Password (min 8 chars)</label>
+                                    <input type="password" id="settings-new-pass" class="form-input" required>
+                                </div>
+                                <button type="submit" class="btn btn-secondary" style="align-self:flex-start;">Update Password</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Database & Security Specs Card -->
+                    <div class="panel-card" style="margin-top:24px;">
+                        <div class="panel-header">
+                            <h3>System & Database Specification</h3>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; font-size:0.84rem;">
+                            <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:8px;">
+                                <div style="color:var(--text-muted);">Database Engine</div>
+                                <div style="font-weight:700; color:var(--accent-emerald); font-size:1rem; margin-top:2px;">SQLite (WAL Concurrency)</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:8px;">
+                                <div style="color:var(--text-muted);">Password Protection</div>
+                                <div style="font-weight:700; color:var(--accent-blue); font-size:1rem; margin-top:2px;">Bcrypt (12 Salt Rounds)</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:8px;">
+                                <div style="color:var(--text-muted);">Session Auth</div>
+                                <div style="font-weight:700; color:var(--accent-purple); font-size:1rem; margin-top:2px;">Signed JWT Bearer Tokens</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:8px;">
+                                <div style="color:var(--text-muted);">Data Integrity</div>
+                                <div style="font-weight:700; color:var(--accent-cyan); font-size:1rem; margin-top:2px;">Foreign Key Constraints ON</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- 1. ADD / EDIT TRANSACTION MODAL -->
+    <div id="modal-transaction" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Record Transaction</h3>
+                <button class="btn-close" onclick="closeModal('modal-transaction')">&times;</button>
+            </div>
+            <form id="form-tx">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Transaction Type</label>
+                        <select id="tx-modal-type" class="form-select" required>
+                            <option value="expense">Expense (Outflow)</option>
+                            <option value="income">Income (Inflow)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="number" step="0.01" id="tx-modal-amount" class="form-input" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Payee / Merchant / Source</label>
+                        <input type="text" id="tx-modal-payee" class="form-input" placeholder="e.g. Whole Foods, Employer Inc." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="tx-modal-category" class="form-select" required>
+                            <option value="Food & Dining">Food & Dining</option>
+                            <option value="Housing & Rent">Housing & Rent</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Utilities & Bills">Utilities & Bills</option>
+                            <option value="Salary & Wages">Salary & Wages</option>
+                            <option value="Freelance & Side Income">Freelance & Side</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Shopping & Goods">Shopping & Goods</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Investments">Investments</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Associated Account</label>
+                        <select id="tx-modal-account" class="form-select" required>
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="tx-modal-date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes (Optional)</label>
+                        <input type="text" id="tx-modal-notes" class="form-input" placeholder="Optional details...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-transaction')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. ADD ACCOUNT MODAL -->
+    <div id="modal-account" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Add Financial Account</h3>
+                <button class="btn-close" onclick="closeModal('modal-account')">&times;</button>
+            </div>
+            <form id="form-account">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Account Name</label>
+                        <input type="text" id="acc-modal-name" class="form-input" placeholder="e.g. Primary Checking" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Account Type</label>
+                        <select id="acc-modal-type" class="form-select" required>
+                            <option value="checking">Checking Account</option>
+                            <option value="savings">Savings Account</option>
+                            <option value="credit_card">Credit Card (Liability)</option>
+                            <option value="investment">Investment Account</option>
+                            <option value="cash">Cash Wallet</option>
+                            <option value="other">Other Account</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Initial Balance</label>
+                        <input type="number" step="0.01" id="acc-modal-balance" class="form-input" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Financial Institution</label>
+                        <input type="text" id="acc-modal-inst" class="form-input" placeholder="e.g. Chase, Fidelity, Vanguard">
+                    </div>
+                    <div class="form-group">
+                        <label>Last 4 Digits / Mask</label>
+                        <input type="text" maxlength="4" id="acc-modal-mask" class="form-input" placeholder="1234">
+                    </div>
+                    <div class="form-group">
+                        <label>Color Accent</label>
+                        <select id="acc-modal-color" class="form-select">
+                            <option value="#3B82F6">Blue (#3B82F6)</option>
+                            <option value="#10B981">Emerald (#10B981)</option>
+                            <option value="#8B5CF6">Purple (#8B5CF6)</option>
+                            <option value="#F43F5E">Rose (#F43F5E)</option>
+                            <option value="#06B6D4">Cyan (#06B6D4)</option>
+                            <option value="#F59E0B">Amber (#F59E0B)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-account')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. ADD BUDGET MODAL -->
+    <div id="modal-budget" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Set Monthly Budget</h3>
+                <button class="btn-close" onclick="closeModal('modal-budget')">&times;</button>
+            </div>
+            <form id="form-budget">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="budget-modal-category" class="form-select" required>
+                            <option value="Food & Dining">Food & Dining</option>
+                            <option value="Housing & Rent">Housing & Rent</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Utilities & Bills">Utilities & Bills</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Shopping & Goods">Shopping & Goods</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Monthly Limit</label>
+                        <input type="number" step="10" id="budget-modal-limit" class="form-input" placeholder="e.g. 500.00" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-budget')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Budget</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. ADD SAVINGS GOAL MODAL -->
+    <div id="modal-goal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Create Savings Goal</h3>
+                <button class="btn-close" onclick="closeModal('modal-goal')">&times;</button>
+            </div>
+            <form id="form-goal">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Goal Title</label>
+                        <input type="text" id="goal-modal-title" class="form-input" placeholder="e.g. Emergency Fund, Vacation" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Amount</label>
+                        <input type="number" step="10" id="goal-modal-target" class="form-input" placeholder="e.g. 5000.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Amount Saved</label>
+                        <input type="number" step="10" id="goal-modal-current" class="form-input" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Target Date (Optional)</label>
+                        <input type="date" id="goal-modal-date" class="form-input">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-goal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. DEPOSIT TO GOAL MODAL -->
+    <div id="modal-deposit" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="deposit-goal-title">Deposit to Goal</h3>
+                <button class="btn-close" onclick="closeModal('modal-deposit')">&times;</button>
+            </div>
+            <form id="form-deposit">
+                <input type="hidden" id="deposit-goal-id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Deposit Amount</label>
+                        <input type="number" step="1" id="deposit-modal-amount" class="form-input" placeholder="e.g. 200.00" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-deposit')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Deposit Funds</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="/js/app.js"></script>
+</body>
+</html>

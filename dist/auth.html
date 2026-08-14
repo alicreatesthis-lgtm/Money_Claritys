@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Clarity — Secure Financial Authentication</title>
+    <meta name="description" content="Log in or register for Money Clarity - Advanced cash flow and financial management with encrypted database security.">
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <!-- Left Hero Presentation Section -->
+        <div class="auth-hero">
+            <div class="hero-brand">
+                <img src="/images/logo.png" alt="Money Clarity Logo" class="hero-logo-img">
+                <div class="brand-text">
+                    <h1 style="font-size:1.6rem; font-weight:800; color:#FFF;">Money Clarity</h1>
+                    <span class="brand-badge">PERSISTENT DB & ENCRYPTED</span>
+                </div>
+            </div>
+
+            <div class="hero-content">
+                <h2>Total Financial Clarity.<br>Built on Real Security.</h2>
+                <p>Track cash flow, configure smart budgets, and grow your net worth with real-time persistent relational storage and enterprise bcrypt authentication.</p>
+                
+                <div class="feature-cards">
+                    <div class="feature-pill">
+                        <span class="pill-icon">🔒</span>
+                        <div>
+                            <strong>Bcrypt Salted Hashing</strong>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Passwords securely hashed with 12 rounds</div>
+                        </div>
+                    </div>
+                    <div class="feature-pill">
+                        <span class="pill-icon">⚡</span>
+                        <div>
+                            <strong>Instant Relational SQLite DB</strong>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Transactions, Budgets, and Accounts with foreign key integrity</div>
+                        </div>
+                    </div>
+                    <div class="feature-pill">
+                        <span class="pill-icon">📊</span>
+                        <div>
+                            <strong>Live Cash Flow Intelligence</strong>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Real-time metrics, interactive trends and budget telemetry</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                &copy; 2026 Money Clarity Financial Technologies. All rights reserved.
+            </div>
+        </div>
+
+        <!-- Right Form Section -->
+        <div class="auth-form-container">
+            <div class="auth-card">
+                <!-- Navigation Tabs -->
+                <div class="auth-tabs">
+                    <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</div>
+                    <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</div>
+                </div>
+
+                <!-- 1. LOGIN FORM -->
+                <form id="login-form" class="auth-form active">
+                    <div class="form-group">
+                        <label for="login-email">Email Address</label>
+                        <input type="email" id="login-email" class="form-input" placeholder="name@example.com" required autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label for="login-password">Password</label>
+                            <a href="javascript:void(0)" onclick="switchAuthTab('forgot')" style="font-size:0.75rem; color:var(--accent-blue); text-decoration:none;">Forgot?</a>
+                        </div>
+                        <input type="password" id="login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" id="btn-login-submit" class="btn btn-primary" style="width:100%; margin-top:8px;">
+                        <span>Sign In to Money Clarity</span>
+                    </button>
+
+                    <!-- Quick Demo Credentials Box -->
+                    <div class="demo-credentials-box">
+                        <div><strong>Demo Credentials:</strong></div>
+                        <div style="margin-top:2px;">Email: <code>alex@claritycash.io</code></div>
+                        <div>Password: <code>Clarity123!</code></div>
+                        <button type="button" class="quick-fill-btn" onclick="fillDemoCredentials()">Quick Fill Demo</button>
+                    </div>
+                </form>
+
+                <!-- 2. REGISTER FORM -->
+                <form id="register-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="reg-fullname">Full Name</label>
+                        <input type="text" id="reg-fullname" class="form-input" placeholder="e.g. Alex Morgan" required autocomplete="name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg-email">Email Address</label>
+                        <input type="email" id="reg-email" class="form-input" placeholder="name@example.com" required autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg-currency">Base Currency</label>
+                        <select id="reg-currency" class="form-select">
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="GBP">GBP (£)</option>
+                            <option value="CAD">CAD (C$)</option>
+                            <option value="AUD">AUD (A$)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg-password">Password</label>
+                        <input type="password" id="reg-password" class="form-input" placeholder="Minimum 8 characters with letter & number" required autocomplete="new-password">
+                        <div class="password-strength">
+                            <div class="strength-bar"><div id="strength-fill" class="strength-fill"></div></div>
+                            <div id="strength-text" class="strength-text">Password strength: Empty</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-reg-submit" class="btn btn-primary" style="width:100%; margin-top:8px;">
+                        <span>Create Free Account</span>
+                    </button>
+                </form>
+
+                <!-- 3. FORGOT PASSWORD FORM -->
+                <form id="forgot-form" class="auth-form">
+                    <div style="margin-bottom:10px;">
+                        <h4 style="font-size:1.05rem; font-weight:700; margin-bottom:4px;">Reset Password</h4>
+                        <p style="font-size:0.8rem; color:var(--text-secondary);">Enter your email to receive an expiring reset token.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="forgot-email">Account Email</label>
+                        <input type="email" id="forgot-email" class="form-input" placeholder="name@example.com" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%;">
+                        <span>Request Reset Link</span>
+                    </button>
+
+                    <button type="button" class="btn btn-secondary" onclick="switchAuthTab('login')" style="width:100%;">
+                        <span>Back to Sign In</span>
+                    </button>
+
+                    <div id="reset-token-display" style="display:none; margin-top:10px;" class="demo-credentials-box">
+                        <div><strong>Reset Token Generated:</strong></div>
+                        <div id="token-val" style="word-break:break-all; font-family:var(--font-mono); font-size:0.75rem;"></div>
+                        <button type="button" class="quick-fill-btn" onclick="openResetWithToken()">Proceed to Set New Password</button>
+                    </div>
+                </form>
+
+                <!-- 4. RESET PASSWORD FORM -->
+                <form id="reset-form" class="auth-form">
+                    <div style="margin-bottom:10px;">
+                        <h4 style="font-size:1.05rem; font-weight:700; margin-bottom:4px;">Set New Password</h4>
+                        <p style="font-size:0.8rem; color:var(--text-secondary);">Provide your token and choose a new secure password.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reset-token-input">Reset Token</label>
+                        <input type="text" id="reset-token-input" class="form-input" placeholder="Token from email/prompt" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reset-new-password">New Password</label>
+                        <input type="password" id="reset-new-password" class="form-input" placeholder="Min 8 characters with letter & number" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%;">
+                        <span>Update Password & Log In</span>
+                    </button>
+
+                    <button type="button" class="btn btn-secondary" onclick="switchAuthTab('login')" style="width:100%;">
+                        <span>Cancel</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/js/auth.js"></script>
+</body>
+</html>

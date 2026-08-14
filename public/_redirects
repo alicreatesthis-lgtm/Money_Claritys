@@ -1,0 +1,5 @@
+/api/*  /.netlify/functions/api/api/:splat  200!
+/login  /auth.html  200
+/register  /auth.html  200
+/forgot-password  /auth.html  200
+/*  /index.html  200
